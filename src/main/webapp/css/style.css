@@ -1,0 +1,96 @@
+/* E-Voting Platform - Custom Styles */
+
+/* Global */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* Navbar */
+.navbar-brand {
+    font-size: 1.3rem;
+}
+
+/* Cards */
+.card {
+    transition: box-shadow 0.2s ease;
+}
+.card:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+
+/* Candidate cards */
+.candidate-card {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.candidate-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Progress bars */
+.progress {
+    border-radius: 10px;
+}
+.progress-bar {
+    border-radius: 10px;
+    transition: width 1s ease;
+}
+
+/* Badge styles */
+.badge {
+    font-weight: 500;
+}
+
+/* Table styles */
+.table th {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Form styles */
+.form-control:focus,
+.form-select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+}
+
+/* Hero section */
+.bg-primary {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%) !important;
+}
+
+/* Footer */
+footer {
+    background: #1a1a2e !important;
+}
+
+/* Receipt token display */
+code {
+    word-break: break-all;
+}
+
+/* Stats cards in dashboard */
+.card.text-white .card-body h3 {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Print styles for results */
+@media print {
+    .navbar, footer, .btn, form { display: none !important; }
+    .card { box-shadow: none !important; border: 1px solid #ddd; }
+}
