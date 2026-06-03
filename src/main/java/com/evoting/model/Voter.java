@@ -13,23 +13,24 @@ public class Voter {
     private String email;
     private String phone;
     private LocalDate dob;
-    private String voterIdNumber;
+    private String pidNumber;
     private String passwordHash;
     private boolean isVerified;
     private boolean isApproved;
     private String status;
+    private boolean faceRegistered;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public Voter() {}
 
     public Voter(String name, String email, String phone, LocalDate dob,
-                 String voterIdNumber, String passwordHash) {
+                 String pidNumber, String passwordHash) {
         this.name = name;
         this.email = email;
         this.phone = phone;
         this.dob = dob;
-        this.voterIdNumber = voterIdNumber;
+        this.pidNumber = pidNumber;
         this.passwordHash = passwordHash;
         this.isVerified = false;
         this.isApproved = false;
@@ -53,8 +54,8 @@ public class Voter {
     public LocalDate getDob() { return dob; }
     public void setDob(LocalDate dob) { this.dob = dob; }
 
-    public String getVoterIdNumber() { return voterIdNumber; }
-    public void setVoterIdNumber(String voterIdNumber) { this.voterIdNumber = voterIdNumber; }
+    public String getPidNumber() { return pidNumber; }
+    public void setPidNumber(String pidNumber) { this.pidNumber = pidNumber; }
 
     public String getPasswordHash() { return passwordHash; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
@@ -67,6 +68,9 @@ public class Voter {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public boolean isFaceRegistered() { return faceRegistered; }
+    public void setFaceRegistered(boolean faceRegistered) { this.faceRegistered = faceRegistered; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

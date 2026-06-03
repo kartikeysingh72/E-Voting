@@ -1,12 +1,8 @@
 package com.evoting.servlet;
 
-import com.evoting.dao.OTPDAO;
 import com.evoting.dao.VoterDAO;
-import com.evoting.model.OTP;
 import com.evoting.model.Voter;
 import com.evoting.util.BCryptUtil;
-import com.evoting.util.EmailUtil;
-import com.evoting.util.OTPUtil;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -17,6 +13,8 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Handles voter registration.
@@ -25,8 +23,12 @@ import java.time.Period;
  */
 public class RegisterServlet extends HttpServlet {
 
+    // Allowed university email domains
+    private static final List<String> ALLOWED_EMAIL_DOMAINS = Arrays.asList(
+        "@shiats.edu.in"
+    );
+
     private final VoterDAO voterDAO = new VoterDAO();
-    private final OTPDAO otpDAO = new OTPDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -42,7 +44,7 @@ public class RegisterServlet extends HttpServlet {
         String email = req.getParameter("email");
         String phone = req.getParameter("phone");
         String dobStr = req.getParameter("dob");
-        String voterIdNumber = req.getParameter("voterIdNumber");
+        String pidNumber = req.getParameter("pidNumber");
         String password = req.getParameter("password");
         String confirmPassword = req.getParameter("confirmPassword");
 
@@ -55,6 +57,21 @@ public class RegisterServlet extends HttpServlet {
 
         if (email == null || !email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
             req.setAttribute("error", "Valid email is required.");
+            req.getRequestDispatcher("/WEB-INF/jsp/register.jsp").forward(req, resp);
+            return;
+        }
+
+        // Validate university email domain
+        String emailLower = email.trim().toLowerCase();
+        boolean domainAllowed = false;
+        for (String domain : ALLOWED_EMAIL_DOMAINS) {
+            if (emailLower.endsWith(domain.toLowerCase())) {
+                domainAllowed = true;
+                break;
+            }
+        }
+        if (!domainAllowed) {
+            req.setAttribute("error", "Only university email addresses are allowed (e.g., yourid@shiats.edu.in).");
             req.getRequestDispatcher("/WEB-INF/jsp/register.jsp").forward(req, resp);
             return;
         }
@@ -95,34 +112,26 @@ public class RegisterServlet extends HttpServlet {
                 return;
             }
 
-            // Check if voter ID number already exists
-            if (voterDAO.findByVoterIdNumber(voterIdNumber) != null) {
-                req.setAttribute("error", "Voter ID number already registered.");
+            // Check if P ID number already exists
+            if (voterDAO.findByPidNumber(pidNumber) != null) {
+                req.setAttribute("error", "P ID number already registered.");
                 req.getRequestDispatcher("/WEB-INF/jsp/register.jsp").forward(req, resp);
                 return;
             }
 
             // Hash password and create voter
             String passwordHash = BCryptUtil.hashPassword(password);
-            Voter voter = new Voter(name.trim(), email.trim(), phone.trim(), dob, voterIdNumber.trim(), passwordHash);
+            Voter voter = new Voter(name.trim(), email.trim(), phone.trim(), dob, pidNumber.trim(), passwordHash);
             int voterId = voterDAO.register(voter);
 
             if (voterId > 0) {
-                // Generate and send OTP
-                String otpCode = OTPUtil.generateOTP();
-                OTP otp = new OTP(email, otpCode, "REGISTRATION");
-                otpDAO.store(otp);
-
-                // Send OTP email
-                boolean emailSent = EmailUtil.sendOTPEmail(email, otpCode, "registration");
-
-                // Store email in session for OTP verification
+                // Store voter info in session for face capture step
                 HttpSession session = req.getSession(true);
-                session.setAttribute("pendingVerificationEmail", email);
                 session.setAttribute("pendingVoterId", voterId);
-                session.setAttribute("otpSent", emailSent);
+                session.setAttribute("pendingVerificationEmail", email);
 
-                resp.sendRedirect(req.getContextPath() + "/otp?action=verify&purpose=REGISTRATION");
+                // Redirect to face capture before OTP verification
+                resp.sendRedirect(req.getContextPath() + "/face/capture?voterId=" + voterId);
             } else {
                 req.setAttribute("error", "Registration failed. Please try again.");
                 req.getRequestDispatcher("/WEB-INF/jsp/register.jsp").forward(req, resp);

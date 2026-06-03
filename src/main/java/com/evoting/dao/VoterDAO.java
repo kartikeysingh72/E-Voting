@@ -19,7 +19,7 @@ public class VoterDAO {
      * @return generated voter_id, or -1 on failure
      */
     public int register(Voter voter) throws SQLException {
-        String sql = "INSERT INTO voters (name, email, phone, dob, voter_id_number, password_hash) " +
+        String sql = "INSERT INTO voters (name, email, phone, dob, pid_number, password_hash) " +
                      "VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -27,7 +27,7 @@ public class VoterDAO {
             ps.setString(2, voter.getEmail());
             ps.setString(3, voter.getPhone());
             ps.setDate(4, Date.valueOf(voter.getDob()));
-            ps.setString(5, voter.getVoterIdNumber());
+            ps.setString(5, voter.getPidNumber());
             ps.setString(6, voter.getPasswordHash());
             ps.executeUpdate();
 
@@ -54,13 +54,13 @@ public class VoterDAO {
     }
 
     /**
-     * Find voter by voter_id_number.
+     * Find voter by P ID number.
      */
-    public Voter findByVoterIdNumber(String voterIdNumber) throws SQLException {
-        String sql = "SELECT * FROM voters WHERE voter_id_number = ?";
+    public Voter findByPidNumber(String pidNumber) throws SQLException {
+        String sql = "SELECT * FROM voters WHERE pid_number = ?";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, voterIdNumber);
+            ps.setString(1, pidNumber);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return mapRow(rs);
             }
@@ -105,6 +105,19 @@ public class VoterDAO {
             ps.setBoolean(1, approved);
             ps.setString(2, approved ? "APPROVED" : "REJECTED");
             ps.setInt(3, voterId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    /**
+     * Mark voter's face as registered.
+     */
+    public boolean updateFaceRegistered(int voterId, boolean registered) throws SQLException {
+        String sql = "UPDATE voters SET face_registered = ? WHERE voter_id = ?";
+        try (Connection conn = DBUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBoolean(1, registered);
+            ps.setInt(2, voterId);
             return ps.executeUpdate() > 0;
         }
     }
@@ -193,11 +206,12 @@ public class VoterDAO {
         v.setEmail(rs.getString("email"));
         v.setPhone(rs.getString("phone"));
         v.setDob(rs.getDate("dob").toLocalDate());
-        v.setVoterIdNumber(rs.getString("voter_id_number"));
+        v.setPidNumber(rs.getString("pid_number"));
         v.setPasswordHash(rs.getString("password_hash"));
         v.setVerified(rs.getBoolean("is_verified"));
         v.setApproved(rs.getBoolean("is_approved"));
         v.setStatus(rs.getString("status"));
+        v.setFaceRegistered(rs.getBoolean("face_registered"));
         v.setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null);
         v.setUpdatedAt(rs.getTimestamp("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null);
         return v;
