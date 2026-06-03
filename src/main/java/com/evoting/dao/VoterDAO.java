@@ -110,19 +110,6 @@ public class VoterDAO {
     }
 
     /**
-     * Mark voter's face as registered.
-     */
-    public boolean updateFaceRegistered(int voterId, boolean registered) throws SQLException {
-        String sql = "UPDATE voters SET face_registered = ? WHERE voter_id = ?";
-        try (Connection conn = DBUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setBoolean(1, registered);
-            ps.setInt(2, voterId);
-            return ps.executeUpdate() > 0;
-        }
-    }
-
-    /**
      * Get all voters (admin view).
      */
     public List<Voter> findAll() throws SQLException {
@@ -196,6 +183,49 @@ public class VoterDAO {
             }
         }
         return false;
+    }
+
+    /**
+     * Delete a voter and all related data in a single transaction.
+     * Cascade order: votes -> otp_store -> voter.
+     * @return true if the voter was deleted
+     */
+    public boolean delete(int voterId) throws SQLException {
+        try (Connection conn = DBUtil.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                // 1. Delete votes (FK has ON DELETE RESTRICT)
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "DELETE FROM votes WHERE voter_id = ?")) {
+                    ps.setInt(1, voterId);
+                    ps.executeUpdate();
+                }
+
+                // 2. Delete OTP records by email (OTP table uses email, not voter_id)
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "DELETE FROM otp_store WHERE email = (SELECT email FROM voters WHERE voter_id = ?)")) {
+                    ps.setInt(1, voterId);
+                    ps.executeUpdate();
+                }
+
+                // 3. Delete voter (face_templates and face_verifications cascade automatically)
+                boolean deleted;
+                try (PreparedStatement ps = conn.prepareStatement(
+                        "DELETE FROM voters WHERE voter_id = ?")) {
+                    ps.setInt(1, voterId);
+                    deleted = ps.executeUpdate() > 0;
+                }
+
+                conn.commit();
+                return deleted;
+
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
     }
 
     // --- Row mapper ---

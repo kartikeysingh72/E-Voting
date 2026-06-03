@@ -102,27 +102,6 @@
             <artifactId>opencsv</artifactId>
             <version>5.9</version>
         </dependency>
-
-        <!-- DJL Core API (Deep Java Library for ML inference) -->
-        <dependency>
-            <groupId>ai.djl</groupId>
-            <artifactId>api</artifactId>
-            <version>0.27.0</version>
-        </dependency>
-
-        <!-- DJL ONNX Runtime Engine -->
-        <dependency>
-            <groupId>ai.djl.onnxruntime</groupId>
-            <artifactId>onnxruntime-engine</artifactId>
-            <version>0.27.0</version>
-        </dependency>
-
-        <!-- ONNX Runtime native binaries (auto-detects OS) -->
-        <dependency>
-            <groupId>com.microsoft.onnxruntime</groupId>
-            <artifactId>onnxruntime</artifactId>
-            <version>1.17.0</version>
-        </dependency>
     </dependencies>
 
     <build>

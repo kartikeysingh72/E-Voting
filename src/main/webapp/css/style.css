@@ -335,3 +335,137 @@ a:hover { color: var(--ev-blue-500); }
 .face-oval-guide {
   box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.35);
 }
+
+/* ============================================================
+   Admin Dashboard — Infographics & Visual Elements
+   ============================================================ */
+
+/* Hero Metric Cards */
+.dash-hero-card {
+  border: none;
+  box-shadow: 0 2px 8px rgba(15,23,42,.06);
+  transition: all .25s ease;
+  overflow: hidden;
+  position: relative;
+}
+.dash-hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--ev-blue-600), var(--ev-blue-500));
+}
+.dash-hero-card:hover {
+  box-shadow: 0 8px 24px rgba(15,23,42,.1);
+  transform: translateY(-4px);
+}
+
+/* Icon Circles */
+.dash-icon-circle {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  transition: transform .2s ease;
+}
+.dash-hero-card:hover .dash-icon-circle { transform: scale(1.1); }
+.dash-icon-blue { background: var(--ev-blue-100); color: var(--ev-blue-600); }
+.dash-icon-green { background: var(--ev-green-100); color: var(--ev-green-600); }
+.dash-icon-amber { background: var(--ev-amber-100); color: var(--ev-amber-500); }
+.dash-icon-red { background: var(--ev-red-100); color: var(--ev-red-600); }
+
+/* Progress Container */
+.dash-progress-container {
+  padding: .75rem 1rem;
+  background: var(--ev-slate-50);
+  border-radius: var(--ev-radius-sm);
+  margin-top: .5rem;
+}
+.dash-progress-container .ev-progress {
+  height: 8px !important;
+  border-radius: 4px;
+  background: var(--ev-slate-200);
+}
+.dash-progress-container .progress-bar {
+  border-radius: 4px;
+  transition: width .8s ease;
+}
+
+/* Mini Stats */
+.dash-mini-stat {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .65rem .75rem;
+  border-radius: var(--ev-radius-sm);
+  font-size: .85rem;
+}
+.dash-mini-stat i { font-size: 1.1rem; }
+.dash-mini-success { background: var(--ev-green-50); color: var(--ev-green-600); }
+.dash-mini-warning { background: var(--ev-amber-100); color: var(--ev-amber-500); }
+.dash-mini-primary { background: var(--ev-blue-50); color: var(--ev-blue-600); }
+.dash-mini-info { background: var(--ev-slate-100); color: var(--ev-slate-600); }
+.dash-mini-amber { background: var(--ev-amber-100); color: var(--ev-amber-500); }
+.dash-mini-red { background: var(--ev-red-100); color: var(--ev-red-600); }
+
+/* Quick Stats Bar */
+.dash-quick-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.25rem;
+}
+.dash-quick-blue { background: var(--ev-blue-100); color: var(--ev-blue-600); }
+.dash-quick-green { background: var(--ev-green-100); color: var(--ev-green-600); }
+.dash-quick-amber { background: var(--ev-amber-100); color: var(--ev-amber-500); }
+.dash-quick-red { background: var(--ev-red-100); color: var(--ev-red-600); }
+
+/* Header Icons */
+.dash-header-icon {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .9rem;
+}
+.dash-header-warning { background: var(--ev-amber-100); color: var(--ev-amber-500); }
+.dash-header-success { background: var(--ev-green-100); color: var(--ev-green-600); }
+
+/* Election Items */
+.dash-election-item {
+  padding: 1rem;
+  background: var(--ev-slate-50);
+  border: 1px solid var(--ev-slate-200);
+  border-radius: var(--ev-radius-sm);
+  transition: all .15s ease;
+}
+.dash-election-item:hover {
+  background: var(--ev-blue-50);
+  border-color: var(--ev-blue-100);
+}
+.dash-election-status {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--ev-green-100);
+  display: flex; align-items: center; justify-content: center;
+}
+.dash-status-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--ev-green-600);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .6; transform: scale(1.2); }
+}
+
+/* Empty State */
+.dash-empty-icon {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: var(--ev-slate-100);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 1.75rem;
+  color: var(--ev-slate-400);
+  margin-bottom: 1rem;
+}

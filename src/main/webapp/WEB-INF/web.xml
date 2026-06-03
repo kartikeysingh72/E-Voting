@@ -24,11 +24,6 @@
 
     <!-- ======== Filters ======== -->
 
-    <!-- Model Initialization Listener -->
-    <listener>
-        <listener-class>com.evoting.listener.ModelInitListener</listener-class>
-    </listener>
-
     <!-- CSRF Protection Filter -->
     <filter>
         <filter-name>CSRFFilter</filter-name>
@@ -57,16 +52,6 @@
     <filter-mapping>
         <filter-name>AdminAuthFilter</filter-name>
         <url-pattern>/admin/*</url-pattern>
-    </filter-mapping>
-
-    <!-- Face Verification Filter (guards ballot access) -->
-    <filter>
-        <filter-name>FaceVerifiedFilter</filter-name>
-        <filter-class>com.evoting.filter.FaceVerifiedFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>FaceVerifiedFilter</filter-name>
-        <url-pattern>/voter/vote</url-pattern>
     </filter-mapping>
 
     <!-- ======== Servlets ======== -->
@@ -134,25 +119,6 @@
     <servlet-mapping>
         <servlet-name>VerifyReceiptServlet</servlet-name>
         <url-pattern>/verify-receipt</url-pattern>
-    </servlet-mapping>
-
-    <!-- Face Capture/Verify Servlets -->
-    <servlet>
-        <servlet-name>FaceCaptureServlet</servlet-name>
-        <servlet-class>com.evoting.servlet.FaceCaptureServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>FaceCaptureServlet</servlet-name>
-        <url-pattern>/face/capture</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>FaceVerifyServlet</servlet-name>
-        <servlet-class>com.evoting.servlet.FaceVerifyServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>FaceVerifyServlet</servlet-name>
-        <url-pattern>/face/verify</url-pattern>
     </servlet-mapping>
 
     <!-- Admin Servlets -->

@@ -1,8 +1,11 @@
 package com.evoting.servlet;
 
+import com.evoting.dao.OTPDAO;
 import com.evoting.dao.VoterDAO;
 import com.evoting.model.Voter;
 import com.evoting.util.BCryptUtil;
+import com.evoting.util.EmailUtil;
+import com.evoting.util.OTPUtil;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -29,6 +32,7 @@ public class RegisterServlet extends HttpServlet {
     );
 
     private final VoterDAO voterDAO = new VoterDAO();
+    private final OTPDAO otpDAO = new OTPDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -125,13 +129,17 @@ public class RegisterServlet extends HttpServlet {
             int voterId = voterDAO.register(voter);
 
             if (voterId > 0) {
-                // Store voter info in session for face capture step
-                HttpSession session = req.getSession(true);
-                session.setAttribute("pendingVoterId", voterId);
-                session.setAttribute("pendingVerificationEmail", email);
+                // Generate and send OTP
+                String otpCode = OTPUtil.generateOTP();
+                otpDAO.saveOTP(email.trim(), otpCode, "REGISTRATION");
+                EmailUtil.sendOTPEmail(email.trim(), otpCode, "registration");
 
-                // Redirect to face capture before OTP verification
-                resp.sendRedirect(req.getContextPath() + "/face/capture?voterId=" + voterId);
+                // Store email in session for OTP verification
+                HttpSession session = req.getSession(true);
+                session.setAttribute("pendingVerificationEmail", email.trim());
+
+                // Redirect to OTP verification page
+                resp.sendRedirect(req.getContextPath() + "/otp");
             } else {
                 req.setAttribute("error", "Registration failed. Please try again.");
                 req.getRequestDispatcher("/WEB-INF/jsp/register.jsp").forward(req, resp);

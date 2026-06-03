@@ -31,20 +31,6 @@
         <div class="alert alert-success"><i class="bi bi-check-circle me-2"></i>${success}</div>
     </c:if>
 
-    <!-- Bypass Token Modal -->
-    <c:if test="${bypassToken != null}">
-        <div class="alert alert-info border">
-            <h6 class="fw-700 mb-2"><i class="bi bi-key me-1"></i>Bypass Token Issued (Voter #${bypassVoterId})</h6>
-            <div class="d-flex align-items-center gap-2">
-                <code class="flex-grow-1 bg-light p-2 rounded" id="bypassTokenText" style="font-size:.85rem;">${bypassToken}</code>
-                <button class="btn btn-sm btn-primary" onclick="copyBypassToken()">
-                    <i class="bi bi-clipboard me-1"></i>Copy
-                </button>
-            </div>
-            <p class="text-muted small mt-2 mb-0">Share this token with the voter. It can only be used once.</p>
-        </div>
-    </c:if>
-
     <!-- Status Filter -->
     <div class="d-flex gap-2 mb-3 flex-wrap">
         <a href="${pageContext.request.contextPath}/admin/voters" class="btn btn-sm ${status == null ? 'btn-primary' : 'btn-outline-secondary'}">All</a>
@@ -60,13 +46,13 @@
                     <thead>
                         <tr>
                             <th>Voter</th><th>Email</th><th>Phone</th><th>DOB</th>
-                            <th>P ID</th><th>Face</th><th>Failures</th><th>Status</th><th>Actions</th>
+                            <th>P ID</th><th>Status</th><th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <c:choose>
                             <c:when test="${empty voters}">
-                                <tr><td colspan="9" class="text-center py-4 text-slate">No voters found.</td></tr>
+                                <tr><td colspan="7" class="text-center py-4 text-slate">No voters found.</td></tr>
                             </c:when>
                             <c:otherwise>
                                 <c:forEach var="voter" items="${voters}">
@@ -76,27 +62,6 @@
                                         <td><small>${voter.phone}</small></td>
                                         <td><small>${voter.dob}</small></td>
                                         <td><code style="font-size:.75rem;">${voter.pidNumber}</code></td>
-                                        <td>
-                                            <c:choose>
-                                                <c:when test="${faceStatusMap[voter.voterId]}">
-                                                    <span class="badge bg-success"><i class="bi bi-check-lg"></i> Yes</span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="badge bg-secondary"><i class="bi bi-x-lg"></i> No</span>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </td>
-                                        <td>
-                                            <c:set var="failCount" value="${failureCountMap[voter.voterId]}"/>
-                                            <c:choose>
-                                                <c:when test="${failCount > 0}">
-                                                    <span class="badge bg-warning text-dark">${failCount} (24h)</span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="text-slate small">0</span>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </td>
                                         <td>
                                             <span class="badge ${voter.status == 'APPROVED' ? 'bg-success' : voter.status == 'REJECTED' ? 'bg-danger' : 'bg-warning'}">
                                                 ${voter.status}
@@ -125,17 +90,16 @@
                                                 <c:if test="${voter.status == 'PENDING' && !voter.verified}">
                                                     <span class="text-slate small">Email not verified</span>
                                                 </c:if>
-                                                <c:if test="${voter.status == 'APPROVED' && faceStatusMap[voter.voterId]}">
-                                                    <form method="POST" action="${pageContext.request.contextPath}/admin/voters" class="d-inline">
-                                                        <input type="hidden" name="_csrf" value="${csrfToken}">
-                                                        <input type="hidden" name="voterId" value="${voter.voterId}">
-                                                        <input type="hidden" name="action" value="issueBypass">
-                                                        <button type="submit" class="btn btn-outline-primary btn-sm"
-                                                                title="Issue one-time bypass token for face verification">
-                                                            <i class="bi bi-key me-1"></i>Bypass
-                                                        </button>
-                                                    </form>
-                                                </c:if>
+                                                <form method="POST" action="${pageContext.request.contextPath}/admin/voters" class="d-inline"
+                                                      onsubmit="return confirm('Are you sure you want to permanently delete voter ${voter.name}?\n\nThis will remove all their votes, OTP records, and cannot be undone.');">
+                                                    <input type="hidden" name="_csrf" value="${csrfToken}">
+                                                    <input type="hidden" name="voterId" value="${voter.voterId}">
+                                                    <input type="hidden" name="action" value="delete">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                            title="Permanently delete voter and all related data">
+                                                        <i class="bi bi-trash me-1"></i>Delete
+                                                    </button>
+                                                </form>
                                             </div>
                                         </td>
                                     </tr>
@@ -148,14 +112,5 @@
         </div>
     </div>
 </div>
-
-<script>
-function copyBypassToken() {
-    var text = document.getElementById('bypassTokenText').textContent;
-    navigator.clipboard.writeText(text).then(function() {
-        alert('Bypass token copied to clipboard!');
-    });
-}
-</script>
 
 <jsp:include page="../footer.jsp"/>
