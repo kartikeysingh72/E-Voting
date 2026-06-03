@@ -2,6 +2,7 @@ package com.evoting.servlet;
 
 import com.evoting.dao.OTPDAO;
 import com.evoting.dao.VoterDAO;
+import com.evoting.model.OTP;
 import com.evoting.model.Voter;
 import com.evoting.util.BCryptUtil;
 import com.evoting.util.EmailUtil;
@@ -131,7 +132,8 @@ public class RegisterServlet extends HttpServlet {
             if (voterId > 0) {
                 // Generate and send OTP
                 String otpCode = OTPUtil.generateOTP();
-                otpDAO.saveOTP(email.trim(), otpCode, "REGISTRATION");
+                OTP otp = new OTP(email.trim(), otpCode, "REGISTRATION");
+                otpDAO.store(otp);
                 EmailUtil.sendOTPEmail(email.trim(), otpCode, "registration");
 
                 // Store email in session for OTP verification
