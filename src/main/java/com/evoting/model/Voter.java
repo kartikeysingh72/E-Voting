@@ -18,7 +18,6 @@ public class Voter {
     private boolean isVerified;
     private boolean isApproved;
     private String status;
-    private boolean faceRegistered;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -68,9 +67,6 @@ public class Voter {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
-
-    public boolean isFaceRegistered() { return faceRegistered; }
-    public void setFaceRegistered(boolean faceRegistered) { this.faceRegistered = faceRegistered; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

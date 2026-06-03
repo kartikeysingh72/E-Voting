@@ -241,7 +241,6 @@ public class VoterDAO {
         v.setVerified(rs.getBoolean("is_verified"));
         v.setApproved(rs.getBoolean("is_approved"));
         v.setStatus(rs.getString("status"));
-        v.setFaceRegistered(rs.getBoolean("face_registered"));
         v.setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null);
         v.setUpdatedAt(rs.getTimestamp("updated_at") != null ? rs.getTimestamp("updated_at").toLocalDateTime() : null);
         return v;
