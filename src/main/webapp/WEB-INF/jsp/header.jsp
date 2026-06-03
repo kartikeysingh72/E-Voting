@@ -7,87 +7,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${param.title != null ? param.title : 'E-Voting Platform'}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="${pageContext.request.contextPath}/css/style.css" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="${pageContext.request.contextPath}/">
-                <i class="bi bi-check2-square"></i> E-Voting Platform
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/">
-                            <i class="bi bi-house"></i> Home
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/results">
-                            <i class="bi bi-bar-chart"></i> Results
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="${pageContext.request.contextPath}/verify-receipt">
-                            <i class="bi bi-receipt"></i> Verify Receipt
-                        </a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav">
-                    <c:choose>
-                        <c:when test="${sessionScope.voter != null}">
-                            <li class="nav-item">
-                                <span class="nav-link text-light">
-                                    <i class="bi bi-person-circle"></i> ${sessionScope.voter.name}
-                                </span>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="${pageContext.request.contextPath}/voter/vote">
-                                    <i class="bi bi-check2-circle"></i> Vote
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="${pageContext.request.contextPath}/logout">
-                                    <i class="bi bi-box-arrow-right"></i> Logout
-                                </a>
-                            </li>
-                        </c:when>
-                        <c:when test="${sessionScope.admin != null}">
-                            <li class="nav-item">
-                                <span class="nav-link text-warning fw-bold">
-                                    <i class="bi bi-shield-lock"></i> ${sessionScope.admin.fullName}
-                                </span>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="${pageContext.request.contextPath}/admin/dashboard">
-                                    <i class="bi bi-speedometer2"></i> Dashboard
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="${pageContext.request.contextPath}/logout">
-                                    <i class="bi bi-box-arrow-right"></i> Logout
-                                </a>
-                            </li>
-                        </c:when>
-                        <c:otherwise>
-                            <li class="nav-item">
-                                <a class="nav-link" href="${pageContext.request.contextPath}/login">
-                                    <i class="bi bi-box-arrow-in-right"></i> Login
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link btn btn-light btn-sm text-primary ms-2 px-3" href="${pageContext.request.contextPath}/register">
-                                    <i class="bi bi-person-plus"></i> Register
-                                </a>
-                            </li>
-                        </c:otherwise>
-                    </c:choose>
-                </ul>
-            </div>
+<nav class="navbar navbar-expand-lg ev-navbar sticky-top">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="${pageContext.request.contextPath}/">
+            <span class="brand-icon"><i class="bi bi-check2-square text-white"></i></span>
+            E-Voting
+        </a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-list text-white fs-4"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav ms-auto gap-1">
+                <c:choose>
+                    <c:when test="${sessionScope.voter != null}">
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/voter/vote">
+                                <i class="bi bi-check2-circle me-1"></i>Cast Vote
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/results">
+                                <i class="bi bi-bar-chart me-1"></i>Results
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/verify-receipt">
+                                <i class="bi bi-shield-check me-1"></i>Verify Receipt
+                            </a>
+                        </li>
+                        <li class="nav-item ms-lg-2">
+                            <span class="nav-link text-white-50">
+                                <i class="bi bi-person-circle me-1"></i>${sessionScope.voter.name}
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-danger" href="${pageContext.request.contextPath}/logout">
+                                <i class="bi bi-box-arrow-right me-1"></i>Logout
+                            </a>
+                        </li>
+                    </c:when>
+                    <c:when test="${sessionScope.admin != null}">
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/dashboard">
+                                <i class="bi bi-grid me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/elections">
+                                <i class="bi bi-calendar-event me-1"></i>Elections
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/voters">
+                                <i class="bi bi-people me-1"></i>Voters
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/admin/results">
+                                <i class="bi bi-bar-chart me-1"></i>Results
+                            </a>
+                        </li>
+                        <li class="nav-item ms-lg-2">
+                            <span class="nav-link text-white-50">
+                                <i class="bi bi-shield-lock me-1"></i>${sessionScope.admin.fullName}
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-danger" href="${pageContext.request.contextPath}/logout">
+                                <i class="bi bi-box-arrow-right me-1"></i>Logout
+                            </a>
+                        </li>
+                    </c:when>
+                    <c:otherwise>
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/">
+                                <i class="bi bi-house me-1"></i>Home
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/results">
+                                <i class="bi bi-bar-chart me-1"></i>Results
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/verify-receipt">
+                                <i class="bi bi-shield-check me-1"></i>Verify
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/login">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-primary btn-sm ms-2 px-3" href="${pageContext.request.contextPath}/register">
+                                Register
+                            </a>
+                        </li>
+                    </c:otherwise>
+                </c:choose>
+            </ul>
         </div>
-    </nav>
-    <main class="container my-4">
+    </div>
+</nav>
+
+<main class="animate-in">

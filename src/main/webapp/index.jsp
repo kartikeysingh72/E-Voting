@@ -5,101 +5,162 @@
 </jsp:include>
 
 <!-- Hero Section -->
-<div class="text-center py-5 mb-4 bg-primary text-white rounded-3">
-    <h1 class="display-4 fw-bold"><i class="bi bi-check2-square"></i> E-Voting Platform</h1>
-    <p class="lead">Secure, transparent, and accessible digital voting for everyone.</p>
-    <c:if test="${sessionScope.voter == null && sessionScope.admin == null}">
-        <a href="${pageContext.request.contextPath}/register" class="btn btn-light btn-lg me-2 mt-3">
-            <i class="bi bi-person-plus"></i> Register to Vote
-        </a>
-        <a href="${pageContext.request.contextPath}/login" class="btn btn-outline-light btn-lg mt-3">
-            <i class="bi bi-box-arrow-in-right"></i> Login
-        </a>
-    </c:if>
-</div>
+<section class="ev-hero">
+    <div class="container position-relative">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <div class="hero-badge">
+                    <span class="dot"></span>
+                    Secure &middot; Anonymous &middot; Verifiable
+                </div>
+                <h1 class="mb-3">
+                    Trusted Digital Voting<br>
+                    <span style="color:var(--ev-blue-500)">for Every Community</span>
+                </h1>
+                <p class="lead mb-4">
+                    A secure, transparent, and auditable e-voting platform for college elections,
+                    society polls, and local body elections. Every vote counts. Every vote is verified.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <c:choose>
+                        <c:when test="${sessionScope.voter != null}">
+                            <a href="${pageContext.request.contextPath}/voter/vote" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check2-circle me-2"></i>Cast Your Vote
+                            </a>
+                        </c:when>
+                        <c:when test="${sessionScope.admin != null}">
+                            <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-primary btn-lg">
+                                <i class="bi bi-grid me-2"></i>Go to Dashboard
+                            </a>
+                        </c:when>
+                        <c:otherwise>
+                            <a href="${pageContext.request.contextPath}/register" class="btn btn-primary btn-lg">
+                                <i class="bi bi-person-plus me-2"></i>Voter Portal
+                            </a>
+                            <a href="${pageContext.request.contextPath}/login" class="btn btn-outline-light btn-lg">
+                                <i class="bi bi-shield-lock me-2"></i>Admin Portal
+                            </a>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block text-center mt-5 mt-lg-0">
+                <div style="font-size:8rem; opacity:.15;"><i class="bi bi-check2-square"></i></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Public Verify Receipt Bar -->
+<section class="py-4" style="background:var(--ev-white); border-bottom:1px solid var(--ev-slate-200);">
+    <div class="container">
+        <div class="row align-items-center justify-content-center">
+            <div class="col-lg-8">
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <div class="d-flex align-items-center gap-2 text-nowrap">
+                        <i class="bi bi-shield-check text-primary fs-5"></i>
+                        <span class="fw-700" style="font-size:.9rem;">Verify Your Vote</span>
+                    </div>
+                    <form action="${pageContext.request.contextPath}/verify-receipt" method="POST" class="d-flex flex-grow-1 gap-2">
+                        <input type="hidden" name="_csrf" value="${csrfToken}">
+                        <input type="text" name="receiptToken" class="form-control form-control-sm"
+                               placeholder="Paste your receipt token here..." aria-label="Receipt token">
+                        <button type="submit" class="btn btn-primary btn-sm text-nowrap">
+                            <i class="bi bi-search me-1"></i>Verify
+                        </button>
+                    </form>
+                    <a href="${pageContext.request.contextPath}/results" class="btn btn-outline-secondary btn-sm text-nowrap">
+                        <i class="bi bi-bar-chart me-1"></i>View Results
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 <!-- Features -->
-<div class="row g-4 mb-5">
-    <div class="col-md-4">
-        <div class="card h-100 border-0 shadow-sm">
-            <div class="card-body text-center">
-                <i class="bi bi-shield-lock text-primary" style="font-size: 3rem;"></i>
-                <h5 class="card-title mt-3">Secure Voting</h5>
-                <p class="card-text text-muted">BCrypt password hashing, Email OTP verification, and CSRF protection ensure your vote is safe.</p>
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title mb-2">Why Trust E-Voting?</h2>
+            <p class="text-slate" style="max-width:500px; margin:0 auto;">
+                Built with enterprise-grade security to ensure every election is fair, transparent, and verifiable.
+            </p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="ev-card ev-feature h-100">
+                    <div class="feature-icon" style="background:var(--ev-blue-100); color:var(--ev-blue-600);">
+                        <i class="bi bi-fingerprint"></i>
+                    </div>
+                    <h5>Two-Factor Authentication</h5>
+                    <p>Every voter login requires password + email OTP verification. No unauthorized access.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="ev-card ev-feature h-100">
+                    <div class="feature-icon" style="background:var(--ev-green-100); color:var(--ev-green-600);">
+                        <i class="bi bi-shield-lock"></i>
+                    </div>
+                    <h5>One Person, One Vote</h5>
+                    <p>Database-enforced unique constraint ensures no voter can cast more than one ballot per election.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="ev-card ev-feature h-100">
+                    <div class="feature-icon" style="background:var(--ev-amber-100); color:var(--ev-amber-500);">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                    <h5>Verifiable Audit Trail</h5>
+                    <p>Every vote generates a unique receipt token. Verify your vote was counted without revealing your identity.</p>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card h-100 border-0 shadow-sm">
-            <div class="card-body text-center">
-                <i class="bi bi-fingerprint text-success" style="font-size: 3rem;"></i>
-                <h5 class="card-title mt-3">One Person, One Vote</h5>
-                <p class="card-text text-muted">Database-enforced unique constraints prevent double voting. Every vote counts exactly once.</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100 border-0 shadow-sm">
-            <div class="card-body text-center">
-                <i class="bi bi-receipt-cutoff text-warning" style="font-size: 3rem;"></i>
-                <h5 class="card-title mt-3">Verifiable Receipt</h5>
-                <p class="card-text text-muted">Get a unique receipt token after voting. Verify your vote was counted using our receipt checker.</p>
-            </div>
-        </div>
-    </div>
-</div>
+</section>
 
 <!-- How It Works -->
-<div class="bg-light rounded-3 p-4 mb-5">
-    <h3 class="text-center mb-4"><i class="bi bi-list-check"></i> How It Works</h3>
-    <div class="row text-center">
-        <div class="col-md-3">
-            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:50px;height:50px;font-size:1.5rem;font-weight:bold;">1</div>
-            <h6>Register</h6>
-            <p class="small text-muted">Sign up with your details and verify your email via OTP.</p>
+<section class="py-5" style="background:var(--ev-white);">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title mb-2">How It Works</h2>
+            <p class="text-slate">Four simple steps to cast your vote securely.</p>
         </div>
-        <div class="col-md-3">
-            <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:50px;height:50px;font-size:1.5rem;font-weight:bold;">2</div>
-            <h6>Get Approved</h6>
-            <p class="small text-muted">Admin reviews and approves your voter registration.</p>
-        </div>
-        <div class="col-md-3">
-            <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:50px;height:50px;font-size:1.5rem;font-weight:bold;">3</div>
-            <h6>Cast Vote</h6>
-            <p class="small text-muted">Login with OTP, select your candidate, and submit your vote.</p>
-        </div>
-        <div class="col-md-3">
-            <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:50px;height:50px;font-size:1.5rem;font-weight:bold;">4</div>
-            <h6>Get Receipt</h6>
-            <p class="small text-muted">Receive a unique token to verify your vote was counted.</p>
-        </div>
-    </div>
-</div>
-
-<!-- Quick Links -->
-<div class="row g-3">
-    <div class="col-md-6">
-        <a href="${pageContext.request.contextPath}/results" class="text-decoration-none">
-            <div class="card border-primary h-100">
-                <div class="card-body text-center">
-                    <i class="bi bi-bar-chart-line text-primary" style="font-size: 2rem;"></i>
-                    <h5 class="mt-2">View Results</h5>
-                    <p class="text-muted mb-0">See election results for completed polls</p>
+        <div class="row g-4 text-center">
+            <div class="col-md-3 col-6">
+                <div class="mb-3">
+                    <span class="d-inline-flex align-items-center justify-content-center rounded-circle fw-800"
+                          style="width:48px;height:48px;background:var(--ev-blue-100);color:var(--ev-blue-600);font-size:1.1rem;">1</span>
                 </div>
+                <h6 class="fw-700">Register</h6>
+                <p class="text-slate small">Sign up with your details and verify your email via OTP.</p>
             </div>
-        </a>
-    </div>
-    <div class="col-md-6">
-        <a href="${pageContext.request.contextPath}/verify-receipt" class="text-decoration-none">
-            <div class="card border-success h-100">
-                <div class="card-body text-center">
-                    <i class="bi bi-search text-success" style="font-size: 2rem;"></i>
-                    <h5 class="mt-2">Verify Your Vote</h5>
-                    <p class="text-muted mb-0">Enter your receipt token to confirm your vote</p>
+            <div class="col-md-3 col-6">
+                <div class="mb-3">
+                    <span class="d-inline-flex align-items-center justify-content-center rounded-circle fw-800"
+                          style="width:48px;height:48px;background:var(--ev-blue-100);color:var(--ev-blue-600);font-size:1.1rem;">2</span>
                 </div>
+                <h6 class="fw-700">Get Approved</h6>
+                <p class="text-slate small">Admin verifies your identity through the KYC approval workflow.</p>
             </div>
-        </a>
+            <div class="col-md-3 col-6">
+                <div class="mb-3">
+                    <span class="d-inline-flex align-items-center justify-content-center rounded-circle fw-800"
+                          style="width:48px;height:48px;background:var(--ev-green-100);color:var(--ev-green-600);font-size:1.1rem;">3</span>
+                </div>
+                <h6 class="fw-700">Cast Your Vote</h6>
+                <p class="text-slate small">Login securely with OTP, select your candidate, and submit your ballot.</p>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="mb-3">
+                    <span class="d-inline-flex align-items-center justify-content-center rounded-circle fw-800"
+                          style="width:48px;height:48px;background:var(--ev-green-100);color:var(--ev-green-600);font-size:1.1rem;">4</span>
+                </div>
+                <h6 class="fw-700">Verify Receipt</h6>
+                <p class="text-slate small">Use your receipt token to confirm your vote was counted.</p>
+            </div>
+        </div>
     </div>
-</div>
+</section>
 
 <jsp:include page="WEB-INF/jsp/footer.jsp"/>
