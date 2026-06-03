@@ -327,15 +327,6 @@ a:hover { color: var(--ev-blue-500); }
 }
 .form-control:focus-visible, .form-select:focus-visible { outline: none; }
 
-/* ---- Face Capture / Verify ---- */
-.face-camera-container {
-  border-radius: var(--ev-radius-lg);
-  overflow: hidden;
-}
-.face-oval-guide {
-  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.35);
-}
-
 /* ============================================================
    Admin Dashboard — Infographics & Visual Elements
    ============================================================ */
