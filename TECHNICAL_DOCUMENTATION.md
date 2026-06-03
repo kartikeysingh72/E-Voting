@@ -11,25 +11,29 @@
 8. [Component Interactions](#8-component-interactions)
 9. [API & Servlet Mapping Reference](#9-api--servlet-mapping-reference)
 10. [Deployment Architecture](#10-deployment-architecture)
+11. [Recent Updates & Change Log](#11-recent-updates--change-log)
 
 ---
 
 ## 1. System Overview
 
-The E-Voting Platform is a secure web-based electronic voting system designed for college elections, society polls, and local body elections. It provides end-to-end digital voting with two-factor authentication, admin-managed voter approval workflows, anonymous ballot casting, and verifiable receipt-based audit trails.
+The E-Voting Platform is a secure web-based electronic voting system designed primarily for **college and university elections**. It provides end-to-end digital voting with two-factor authentication, admin-managed voter approval workflows, anonymous ballot casting, and verifiable receipt-based audit trails. The platform is tailored for institutional use, with university email domain validation and P ID Number-based voter identification.
 
 ### 1.1 Key Capabilities
 
 | Capability | Description |
 |---|---|
-| Voter Self-Registration | OTP-verified email-based registration with age 18+ enforcement |
+| Voter Self-Registration | OTP-verified email-based registration restricted to university email domains (`@shiats.edu.in`) with age 18+ enforcement |
 | Admin Approval Workflow | Admin must approve (KYC check) each voter before they can vote |
 | Two-Factor Authentication | Password + Email OTP for every voter login |
 | One-Person-One-Vote | Enforced at application layer + database unique constraint |
 | Anonymous Balloting | Vote is linked to voter_id for eligibility, but receipt token is the only audit trail |
 | Receipt-Based Audit | Each vote generates a unique 64-char receipt token for post-election verification |
+| Per-Election Public Results | Public results page with election selector dropdown for viewing individual election outcomes |
+| Candidate Symbol Display | Party symbols displayed on ballot cards alongside candidate photos and bios |
 | Role-Based Access | Voters vote; Admins manage elections, candidates, voters, and results |
-| Result Export | CSV and HTML export of election results |
+| Result Export | CSV and HTML export of election results from admin panel |
+| University Domain Restriction | Whitelist-based email domain validation ensures only institutional emails can register |
 
 ### 1.2 System Context Diagram
 
@@ -242,6 +246,8 @@ graph LR
 | Backend Framework | Jakarta Servlets | 6.0 | Controller layer |
 | View Technology | JSP + JSTL | 3.1 / 3.0 | Server-side rendering |
 | UI Framework | Bootstrap 5 | 5.3.2 | Responsive frontend |
+| Icons | Bootstrap Icons | 1.11.3 | UI iconography |
+| Typography | Inter (Google Fonts) | — | Clean, modern typeface |
 | Database | MySQL | 8.0+ | Persistent storage |
 | Application Server | Apache Tomcat | 11.0.22 | Servlet container |
 | Build Tool | Maven | 3.x | Build automation |
@@ -249,11 +255,27 @@ graph LR
 | Email | Jakarta Mail | 2.0.1 | SMTP OTP delivery |
 | DB Connector | MySQL Connector/J | 8.2.0 | JDBC driver |
 | JSON | Gson | 2.10.1 | AJAX response payloads |
-| File Upload | Commons FileUpload | 1.5 | Candidate photo uploads |
+| File Upload | Commons FileUpload | 1.5 | Candidate photo/symbol uploads |
 | CSV Export | OpenCSV | 5.9 | Result export |
-| Icons | Bootstrap Icons | 1.11.3 | UI iconography |
 
-### 3.1 Package Structure
+### 3.1 CSS Design System
+
+The platform uses a custom CSS design system defined in `style.css` with CSS custom properties:
+
+| Variable | Value | Usage |
+|---|---|---|
+| `--ev-navy` | `#0f172a` | Headings, primary text |
+| `--ev-slate-*` | `#1e293b` to `#f8fafc` | Secondary text, backgrounds, borders |
+| `--ev-blue-*` | `#2563eb` to `#eff6ff` | Primary actions, links, highlights |
+| `--ev-green-*` | `#059669` to `#ecfdf5` | Success states, leading indicators |
+| `--ev-red-*` | `#dc2626` to `#fee2e2` | Error states, danger actions |
+| `--ev-amber-*` | `#f59e0b` to `#fef3c7` | Warnings, pending states |
+| `--ev-shadow-*` | Various | Card and element elevation |
+| `--ev-radius-*` | `.5rem` to `1rem` | Border radius for cards and inputs |
+
+Custom component classes include `.ev-card`, `.ev-metric`, `.ev-progress`, `.ev-sidebar`, `.ev-main`, `.ev-hero`, `.ev-candidate-card`, `.ev-dropzone`, `.party-symbol`, `.ev-table`, and `.voted-badge`.
+
+### 3.2 Package Structure
 
 ```
 com.evoting
@@ -321,7 +343,7 @@ erDiagram
         varchar email UK "UNIQUE, NOT NULL"
         varchar phone "NOT NULL"
         date dob "NOT NULL"
-        varchar voter_id_number UK "Government ID"
+        varchar pid_number UK "University P ID Number"
         varchar password_hash "BCrypt hash"
         boolean is_verified "Email OTP verified"
         boolean is_approved "Admin KYC approved"
@@ -348,8 +370,8 @@ erDiagram
         varchar name "NOT NULL"
         varchar party "NOT NULL"
         text bio "Optional"
-        varchar photo_url "Optional"
-        varchar symbol_url "Optional"
+        varchar photo_url "Optional - candidate photo"
+        varchar symbol_url "Optional - party symbol"
         timestamp created_at "DEFAULT CURRENT_TIMESTAMP"
     }
 
@@ -386,7 +408,7 @@ erDiagram
 | `UNIQUE (voter_id, election_id)` | votes | **Prevents double-voting** at DB level |
 | `UNIQUE receipt_token` | votes | Ensures unique audit trail tokens |
 | `UNIQUE email` | voters | One account per email |
-| `UNIQUE voter_id_number` | voters | One account per government ID |
+| `UNIQUE pid_number` | voters | One account per university P ID |
 | `UNIQUE username` | admins | Unique admin usernames |
 | `FK elections.created_by` | elections -> admins | Track who created each election |
 | `FK candidates.election_id` | candidates -> elections | ON DELETE CASCADE |
@@ -433,6 +455,7 @@ graph TB
         Auth[Voter Auth Filter]
         AdminAuth[Admin Auth Filter]
         Session[Session Management]
+        DomainValidation[Email Domain Whitelist]
     end
 
     subgraph Data Layer
@@ -455,6 +478,7 @@ graph TB
     AdminAuth --> Session
     Session --> BCrypt
     Session --> OTP2FA
+    Session --> DomainValidation
     BCrypt --> PreparedStmt
     OTP2FA --> PreparedStmt
     PreparedStmt --> UniqueConstraint
@@ -470,6 +494,7 @@ graph TB
 | **Cross-Site Request Forgery** | Per-session CSRF tokens | `CSRFFilter` validates `_csrf` param on POST; `CSRFUtil` generates Base64 tokens via `SecureRandom` |
 | **Password Theft** | BCrypt hashing (cost 12) | `BCryptUtil.hashPassword()` / `checkPassword()` |
 | **Credential Stuffing** | Two-factor authentication | Email OTP required after password verification |
+| **Unauthorized Registration** | Email domain whitelist | `RegisterServlet` validates against `ALLOWED_EMAIL_DOMAINS` list (e.g., `@shiats.edu.in`) |
 | **Session Hijacking** | HttpOnly session cookies | `web.xml` cookie-config `<http-only>true</http-only>` |
 | **Clickjacking** | X-Frame-Options: DENY | Set by `CSRFFilter` on every response |
 | **MIME Sniffing** | X-Content-Type-Options: nosniff | Set by `CSRFFilter` |
@@ -527,15 +552,15 @@ sequenceDiagram
     V->>RS: GET /register
     RS->>V: Forward to register.jsp
 
-    V->>RS: POST /register (name, email, phone, dob, voterId, password)
-    RS->>RS: Validate inputs (email format, password >= 8 chars, age >= 18)
+    V->>RS: POST /register (name, email, phone, dob, pidNumber, password)
+    RS->>RS: Validate inputs (email format, domain whitelist, password >= 8 chars, age >= 18)
     RS->>VDAO: findByEmail(email)
     VDAO->>DB: SELECT * FROM voters WHERE email = ?
     DB-->>VDAO: null (not exists)
     VDAO-->>RS: null
 
-    RS->>VDAO: findByVoterIdNumber(voterId)
-    VDAO->>DB: SELECT * FROM voters WHERE voter_id_number = ?
+    RS->>VDAO: findByPidNumber(pidNumber)
+    VDAO->>DB: SELECT * FROM voters WHERE pid_number = ?
     DB-->>VDAO: null
     VDAO-->>RS: null
 
@@ -573,6 +598,16 @@ sequenceDiagram
 
     OS->>V: Forward to login.jsp with success message
 ```
+
+**Registration validation chain (in order):**
+1. Name non-empty check
+2. Email regex format validation
+3. **Email domain whitelist validation** — checks if email ends with an allowed domain (e.g., `@shiats.edu.in`)
+4. Password minimum 8 characters
+5. Password confirmation match
+6. Age >= 18 from date of birth
+7. Email uniqueness check (database)
+8. P ID Number uniqueness check (database)
 
 ### 6.2 Voter Login Flow (Password + OTP 2FA)
 
@@ -723,8 +758,8 @@ sequenceDiagram
     EDAO->>DB: SELECT * FROM elections WHERE election_id=1
     VS->>CDAO: findByElectionId(1)
     CDAO->>DB: SELECT * FROM candidates WHERE election_id=1
-    DB-->>CDAO: List of candidates
-    VS->>V: Forward to ballot.jsp (candidate ballot)
+    DB-->>CDAO: List of candidates (with photo_url and symbol_url)
+    VS->>V: Forward to ballot.jsp (candidate ballot with photos and party symbols)
 
     V->>VS: POST /voter/vote (electionId=1, candidateId=3, _csrf=token)
 
@@ -748,6 +783,13 @@ sequenceDiagram
     VS->>V: Forward to vote-success.jsp (receipt token displayed)
 ```
 
+**Ballot page features:**
+- Two-step flow: election selection → candidate ballot
+- Candidate cards display photo, name, party badge, bio, and **party symbol** image
+- Visual selection indicator (check icon + highlight border)
+- Confirmation modal before final vote submission
+- "Already Voted" status shown for elections where voter has already cast a ballot
+
 ### 7.2 Double-Vote Prevention (Two Layers)
 
 ```mermaid
@@ -767,7 +809,47 @@ graph TB
     L --> M[Show receipt token]
 ```
 
-### 7.3 Result Computation & Declaration Flow
+### 7.3 Public Results Flow (Election Selector)
+
+```mermaid
+sequenceDiagram
+    participant U as Any User Browser
+    participant RS as ResultServlet
+    participant EDAO as ElectionDAO
+    participant CDAO as CandidateDAO
+    participant VDAO as VoteDAO
+    participant DB as MySQL
+
+    U->>RS: GET /results
+    RS->>EDAO: findCompletedElections()
+    EDAO->>DB: SELECT * FROM elections WHERE status='COMPLETED'
+    DB-->>EDAO: List of completed elections
+    EDAO-->>RS: completedElections list
+    RS->>RS: req.setAttribute("completedElections", list)
+    RS->>U: Forward to results.jsp (dropdown shown, "Select an Election" prompt)
+
+    U->>RS: GET /results?electionId=1
+    RS->>EDAO: findCompletedElections()
+    EDAO-->>RS: completedElections (for dropdown)
+    RS->>EDAO: findById(1)
+    EDAO->>DB: SELECT * FROM elections WHERE election_id=1
+    DB-->>EDAO: Election record
+    RS->>CDAO: findByElectionIdWithVotes(1)
+    CDAO->>DB: SELECT c.*, COUNT(v.vote_id) FROM candidates c LEFT JOIN votes v ...
+    DB-->>CDAO: Candidates with vote counts
+    RS->>VDAO: getVoteCountByElection(1)
+    VDAO->>DB: SELECT COUNT(*) FROM votes WHERE election_id=1
+    DB-->>VDAO: totalVotes
+    RS->>RS: Set election, candidates, totalVotes, completedElections attributes
+    RS->>U: Forward to results.jsp (shows selected election results with tallies)
+```
+
+**Results page states:**
+1. **No completed elections** → "No Results Available" message
+2. **Completed elections exist, none selected** → Election selector dropdown + "Select an Election" prompt
+3. **Election selected** → Candidate tallies with vote counts, percentage badges, progress bars, and "Leading" indicator for top candidate
+
+### 7.4 Result Computation & Declaration Flow (Admin)
 
 ```mermaid
 sequenceDiagram
@@ -785,8 +867,8 @@ sequenceDiagram
     DB-->>EDAO: Election record
     EDAO-->>ARS: Election object
 
-    ARS->>CDAO: findByElectionId(1)
-    CDAO->>DB: SELECT * FROM candidates WHERE election_id=1
+    ARS->>CDAO: findByElectionIdWithVotes(1)
+    CDAO->>DB: SELECT candidates with vote counts
     DB-->>CDAO: Candidate list
     CDAO-->>ARS: candidates
 
@@ -795,13 +877,7 @@ sequenceDiagram
     DB-->>VDAO: 150
     VDAO-->>ARS: totalVotes = 150
 
-    ARS->>VDAO: getVoteCountsByCandidate(1)
-    VDAO->>DB: SELECT candidate_id, COUNT(*) FROM votes WHERE election_id=1 GROUP BY candidate_id
-    DB-->>VDAO: {candidate_1: 80, candidate_2: 50, candidate_3: 20}
-    VDAO-->>ARS: voteCounts map
-
-    ARS->>ARS: Calculate percentages for each candidate
-    ARS->>A: Forward to admin/results.jsp (bar chart + stats)
+    ARS->>A: Forward to admin/results.jsp (metrics cards, turnout bar, candidate tallies)
 
     Note over A,DB: Declare Results
 
@@ -812,7 +888,7 @@ sequenceDiagram
     ARS->>A: Redirect to /admin/results?electionId=1
 ```
 
-### 7.4 Admin Voter Approval Workflow
+### 7.5 Admin Voter Approval Workflow
 
 ```mermaid
 sequenceDiagram
@@ -838,17 +914,9 @@ sequenceDiagram
     VDAO-->>AVAS: success
 
     AVAS->>A: Redirect to /admin/voters
-
-    Note over A,DB: Reject Flow
-
-    A->>AVAS: POST /admin/voters (action=reject, voterId=6)
-    AVAS->>VDAO: updateApprovalStatus(6, false, "REJECTED")
-    VDAO->>DB: UPDATE voters SET is_approved=FALSE, status='REJECTED' WHERE voter_id=6
-    DB-->>VDAO: OK
-    AVAS->>A: Redirect to /admin/voters
 ```
 
-### 7.5 Receipt Verification Flow
+### 7.6 Receipt Verification Flow
 
 ```mermaid
 sequenceDiagram
@@ -1032,16 +1100,16 @@ stateDiagram-v2
 | URL Pattern | Servlet | HTTP Methods | Access Level | Description |
 |---|---|---|---|---|
 | `/` | `index.jsp` (welcome file) | GET | Public | Landing page |
-| `/register` | `RegisterServlet` | GET, POST | Public | Voter registration |
+| `/register` | `RegisterServlet` | GET, POST | Public | Voter registration (domain-restricted) |
 | `/login` | `LoginServlet` | GET, POST | Public | Voter/Admin login |
 | `/otp` | `OTPServlet` | GET, POST | Public | OTP send/resend/verify |
 | `/logout` | `LogoutServlet` | GET | Any authenticated | Session destroy |
-| `/results` | `ResultServlet` | GET | Public | Election results |
+| `/results` | `ResultServlet` | GET | Public | Per-election results with selector |
 | `/verify-receipt` | `VerifyReceiptServlet` | GET, POST | Public | Receipt audit trail |
 | `/voter/vote` | `VoteServlet` | GET, POST | Voter only | Ballot + vote casting |
 | `/admin/dashboard` | `AdminDashboardServlet` | GET | Admin only | Stats dashboard |
 | `/admin/elections` | `AdminElectionServlet` | GET, POST | Admin only | Election CRUD |
-| `/admin/candidates` | `AdminCandidateServlet` | GET, POST | Admin only | Candidate CRUD |
+| `/admin/candidates` | `AdminCandidateServlet` | GET, POST | Admin only | Candidate CRUD with photo/symbol upload |
 | `/admin/voters` | `AdminVoterApprovalServlet` | GET, POST | Admin only | Voter approval |
 | `/admin/results` | `AdminResultServlet` | GET, POST | Admin only | View/declare results |
 | `/admin/export` | `ExportResultServlet` | GET | Admin only | CSV/HTML export |
@@ -1073,7 +1141,7 @@ stateDiagram-v2
 | Admin results | `WEB-INF/jsp/admin/results.jsp` | AdminResultServlet |
 | Error page | `WEB-INF/jsp/error.jsp` | Error handler |
 | Common header | `WEB-INF/jsp/header.jsp` | Included by all pages |
-| Common footer | `WEB-INF/jsp/footer.jsp` | Included by all pages |
+| Common footer | `WEB-INF/jsp/footer.jsp` | Included by all pages (minimal border) |
 
 ---
 
@@ -1181,4 +1249,75 @@ e-voting.war
 | `web.xml` | `WEB-INF/web.xml` | Servlet mappings, filters, session config |
 | `app.properties` | `src/main/resources/app.properties` | DB credentials, SMTP config, pool size |
 | `schema.sql` | `sql/schema.sql` | Database DDL + seed data |
-| `style.css` | `src/main/webapp/css/style.css` | Custom CSS overrides |
+| `style.css` | `src/main/webapp/css/style.css` | Design system + custom CSS |
+
+---
+
+## 11. Recent Updates & Change Log
+
+### 11.1 UI/UX Redesign (Complete)
+
+All public and admin pages have been redesigned with a modern, consistent design system:
+
+- **Public pages**: Hero section with gradient text, feature cards, step-by-step "How It Works" section, verify receipt bar
+- **Admin pages**: Sidebar navigation layout (`.ev-sidebar` + `.ev-main`), metric cards (`.ev-metric`), icon-labeled forms, responsive tables
+- **Design system**: CSS custom properties, Inter font family, Bootstrap 5.3.2, Bootstrap Icons 1.11.3
+- **Candidate cards**: Photo display with fallback avatar initials, party badge, bio excerpt, party symbol section
+
+### 11.2 P ID Number (University Identity)
+
+Replaced the generic "Voter ID Number" / "Government ID" concept with "P ID Number" for university context:
+
+| Component | Change |
+|---|---|
+| Database | Column `voter_id_number` → `pid_number` (with COMMENT 'University P ID Number') |
+| `Voter.java` | Field `voterIdNumber` → `pidNumber`, getter/setter renamed |
+| `VoterDAO.java` | SQL column `pid_number`, method `findByPidNumber()` |
+| `RegisterServlet.java` | Parameter `pidNumber`, DAO call `findByPidNumber()`, error "P ID number already registered" |
+| `register.jsp` | Label "P ID Number", input name `pidNumber`, placeholder "e.g., P1234567" |
+| Admin JSPs | Table headers and EL expressions updated to use `pidNumber` |
+
+### 11.3 Email Domain Validation
+
+Registration is restricted to university email addresses using a whitelist pattern:
+
+```java
+// RegisterServlet.java
+private static final List<String> ALLOWED_EMAIL_DOMAINS = Arrays.asList(
+    "@shiats.edu.in"
+);
+```
+
+- Validates email domain after format check, before database uniqueness check
+- Returns user-friendly error: "Only university email addresses are allowed (e.g., yourid@shiats.edu.in)."
+- Placeholder text uses generic example (`yourid@shiats.edu.in`) for privacy
+- Easy to extend by adding more domains to the list
+
+### 11.4 Candidate Symbol Display
+
+Party symbols are now displayed on the ballot page alongside candidate information:
+
+- `ballot.jsp` renders `candidate.symbolUrl` below the candidate bio section
+- Displayed with a "Party Symbol" label and divider
+- CSS class `.party-symbol` constrains to 48×48px with `object-fit: contain`
+- Admin candidate management provides drag-drop upload zones for both photo and symbol URLs
+
+### 11.5 Public Results Election Selector
+
+The public results page was redesigned from showing all results at once to a per-election selector pattern:
+
+- **ResultServlet**: Loads all completed elections for the dropdown (`completedElections` attribute), then loads specific election results when `electionId` parameter is provided
+- **results.jsp**: Election selector dropdown (auto-submits on change) with three display states:
+  1. No completed elections → "No Results Available"
+  2. Elections exist, none selected → "Select an Election" prompt
+  3. Election selected → Candidate tallies with progress bars, vote counts, percentage badges, and "Leading" indicator
+- Mirrors the admin results page pattern but with public-facing styling
+
+### 11.6 Minimal Footer
+
+The footer was simplified across all pages:
+
+- Removed copyright text ("© 2026 E-Voting Platform") and branding ("Secure Digital Democracy")
+- Removed navigation links (Home, Results, Verify)
+- Replaced with a single minimal border separator: `<div style="border-top:1px solid var(--ev-slate-200);"></div>`
+- Change is global since all pages include the centralized `footer.jsp`

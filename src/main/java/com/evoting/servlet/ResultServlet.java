@@ -29,37 +29,28 @@ public class ResultServlet extends HttpServlet {
             throws ServletException, IOException {
 
         try {
+            // Always load all completed elections for the dropdown
+            List<Election> completedElections = electionDAO.findCompletedElections();
+            req.setAttribute("completedElections", completedElections);
+
             String electionIdStr = req.getParameter("electionId");
 
-            if (electionIdStr != null) {
-                // Show results for specific election
+            if (electionIdStr != null && !electionIdStr.isEmpty()) {
+                // Show results for a specific election
                 int electionId = Integer.parseInt(electionIdStr);
                 Election election = electionDAO.findById(electionId);
 
                 if (election == null) {
                     req.setAttribute("error", "Election not found.");
-                    req.getRequestDispatcher("/WEB-INF/jsp/results.jsp").forward(req, resp);
-                    return;
+                } else {
+                    List<Candidate> candidates = candidateDAO.findByElectionIdWithVotes(electionId);
+                    int totalVotes = voteDAO.getVoteCountByElection(electionId);
+
+                    req.setAttribute("election", election);
+                    req.setAttribute("candidates", candidates);
+                    req.setAttribute("totalVotes", totalVotes);
                 }
-
-                List<Candidate> candidates = candidateDAO.findByElectionIdWithVotes(electionId);
-                int totalVotes = voteDAO.getVoteCountByElection(electionId);
-
-                // Calculate percentage for each candidate
-                for (Candidate c : candidates) {
-                    if (totalVotes > 0) {
-                        c.setVoteCount(c.getVoteCount()); // already set from query
-                    }
-                }
-
-                req.setAttribute("election", election);
-                req.setAttribute("candidates", candidates);
-                req.setAttribute("totalVotes", totalVotes);
             }
-
-            // List all completed elections
-            List<Election> completedElections = electionDAO.findCompletedElections();
-            req.setAttribute("completedElections", completedElections);
 
             req.getRequestDispatcher("/WEB-INF/jsp/results.jsp").forward(req, resp);
 
