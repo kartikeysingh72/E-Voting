@@ -25,9 +25,6 @@
                         </div>
                         <h3 class="fw-800 text-navy mb-1">Create Voter Account</h3>
                         <p class="text-slate small mb-0">You must be 18 years or older to register.</p>
-                        <p class="text-slate small mb-0 mt-1">
-                            <i class="bi bi-camera-video me-1"></i>A face capture step will follow after form submission.
-                        </p>
                     </div>
 
                     <form method="POST" action="${pageContext.request.contextPath}/register" novalidate>
@@ -93,7 +90,7 @@
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100 btn-lg">
-                            <i class="bi bi-person-plus me-2"></i>Register &amp; Capture Face
+                            <i class="bi bi-person-plus me-2"></i>Register
                         </button>
                     </form>
                 </div>
