@@ -122,6 +122,10 @@ public class VoteServlet extends HttpServlet {
             boolean success = voteDAO.castVote(vote);
 
             if (success) {
+                // Clear face verification status (must re-verify for next election)
+                session.removeAttribute("faceVerified");
+                session.removeAttribute("bypassVerified");
+
                 // Invalidate session after voting (security measure)
                 req.setAttribute("success", true);
                 req.setAttribute("receiptToken", receiptToken);
