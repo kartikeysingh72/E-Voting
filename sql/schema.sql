@@ -29,7 +29,7 @@ CREATE TABLE voters (
     email           VARCHAR(150) NOT NULL UNIQUE,
     phone           VARCHAR(15)  NOT NULL,
     dob             DATE         NOT NULL,
-    voter_id_number VARCHAR(50)  NOT NULL UNIQUE COMMENT 'Government-issued voter ID number',
+    pid_number      VARCHAR(50)  NOT NULL UNIQUE COMMENT 'University P ID Number',
     password_hash   VARCHAR(255) NOT NULL,
     is_verified     BOOLEAN      NOT NULL DEFAULT FALSE COMMENT 'Email OTP verified',
     is_approved     BOOLEAN      NOT NULL DEFAULT FALSE COMMENT 'Admin approved (KYC)',
@@ -124,3 +124,45 @@ CREATE INDEX idx_voters_email    ON voters(email);
 CREATE INDEX idx_elections_status ON elections(status);
 CREATE INDEX idx_candidates_election ON candidates(election_id);
 CREATE INDEX idx_votes_election  ON votes(election_id);
+
+-- ============================================================
+-- Face Templates Table (stores embeddings, NOT raw images)
+-- ============================================================
+CREATE TABLE face_templates (
+    template_id     INT AUTO_INCREMENT PRIMARY KEY,
+    voter_id        INT          NOT NULL,
+    embedding_json  LONGTEXT     NOT NULL COMMENT 'JSON array of float[512] ArcFace embedding',
+    model_version   VARCHAR(50)  NOT NULL DEFAULT 'arcface-onnx-1.0',
+    captured_at     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_active       BOOLEAN      NOT NULL DEFAULT TRUE,
+
+    CONSTRAINT fk_face_voter FOREIGN KEY (voter_id) REFERENCES voters(voter_id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+-- ============================================================
+-- Face Verifications Audit Log
+-- ============================================================
+CREATE TABLE face_verifications (
+    verification_id INT AUTO_INCREMENT PRIMARY KEY,
+    voter_id        INT          NOT NULL,
+    action          VARCHAR(30)  NOT NULL COMMENT 'REGISTRATION, LOGIN_VOTE, ADMIN_BYPASS',
+    match_score     DECIMAL(5,4) NULL COMMENT 'Cosine similarity score (0.0000-1.0000)',
+    threshold_used  DECIMAL(5,4) NOT NULL DEFAULT 0.6000,
+    passed          BOOLEAN      NOT NULL DEFAULT FALSE,
+    bypass_token    VARCHAR(64)  NULL COMMENT 'Admin-issued one-time bypass token',
+    bypass_used     BOOLEAN      NOT NULL DEFAULT FALSE COMMENT 'Whether this bypass token has been consumed',
+    ip_address      VARCHAR(45)  NULL,
+    user_agent      VARCHAR(500) NULL,
+    created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    INDEX idx_face_verif_voter (voter_id, created_at DESC),
+    CONSTRAINT fk_face_verif_voter FOREIGN KEY (voter_id) REFERENCES voters(voter_id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+-- ============================================================
+-- Alter Voters: add face registration flag
+-- ============================================================
+ALTER TABLE voters ADD COLUMN face_registered BOOLEAN NOT NULL DEFAULT FALSE
+    COMMENT 'Whether face embedding has been captured';
