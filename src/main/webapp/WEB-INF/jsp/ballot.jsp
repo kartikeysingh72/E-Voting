@@ -4,137 +4,219 @@
     <jsp:param name="title" value="Cast Your Vote - E-Voting Platform"/>
 </jsp:include>
 
-<h2 class="mb-4"><i class="bi bi-check2-circle"></i> Cast Your Vote</h2>
-<p class="text-muted">Welcome, <strong>${sessionScope.voter.name}</strong>! Select an election and cast your vote below.</p>
+<div class="container py-4">
 
-<c:if test="${error != null}">
-    <div class="alert alert-danger alert-dismissible fade show">
-        <i class="bi bi-exclamation-triangle"></i> ${error}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-</c:if>
+    <c:if test="${error != null}">
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="bi bi-exclamation-circle me-2"></i>${error}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </c:if>
 
-<!-- Election List -->
-<c:if test="${selectedElection == null}">
-    <div class="row g-3">
-        <c:forEach var="election" items="${elections}">
-            <div class="col-md-6">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <h5 class="card-title">${election.title}</h5>
-                            <c:choose>
-                                <c:when test="${election.status == 'VOTED'}">
-                                    <span class="badge bg-success"><i class="bi bi-check"></i> Voted</span>
-                                </c:when>
-                                <c:otherwise>
-                                    <span class="badge bg-primary"><i class="bi bi-clock"></i> Open</span>
-                                </c:otherwise>
-                            </c:choose>
+    <c:choose>
+        <%-- ==================== STEP A: Election Selection ==================== --%>
+        <c:when test="${selectedElection == null}">
+            <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                <div>
+                    <h2 class="fw-800 text-navy mb-0">Active Elections</h2>
+                    <p class="text-slate small mb-0">Select an election to view the ballot and cast your vote.</p>
+                </div>
+                <span class="badge bg-primary fs-6">${elections.size()} election(s)</span>
+            </div>
+
+            <c:choose>
+                <c:when test="${empty elections}">
+                    <div class="ev-card">
+                        <div class="card-body text-center py-5">
+                            <i class="bi bi-calendar-x text-slate" style="font-size:3rem;"></i>
+                            <h5 class="fw-700 mt-3">No Active Elections</h5>
+                            <p class="text-slate">There are no elections currently open for voting.</p>
                         </div>
-                        <p class="card-text text-muted">${election.description}</p>
-                        <small class="text-muted">
-                            <i class="bi bi-calendar"></i>
-                            Ends: ${election.endDate}
-                        </small>
                     </div>
-                    <div class="card-footer bg-transparent">
-                        <c:choose>
-                            <c:when test="${election.status == 'VOTED'}">
-                                <span class="text-success"><i class="bi bi-check-circle"></i> You have already voted</span>
-                            </c:when>
-                            <c:otherwise>
-                                <a href="${pageContext.request.contextPath}/voter/vote?electionId=${election.electionId}"
-                                   class="btn btn-primary">
-                                    <i class="bi bi-arrow-right"></i> View Ballot
-                                </a>
-                            </c:otherwise>
-                        </c:choose>
+                </c:when>
+                <c:otherwise>
+                    <div class="row g-4">
+                        <c:forEach var="election" items="${elections}">
+                            <div class="col-md-6">
+                                <div class="ev-election-card ${election.status == 'VOTED' ? 'voted' : ''} h-100">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="fw-700 text-navy mb-0">${election.title}</h5>
+                                        <c:choose>
+                                            <c:when test="${election.status == 'VOTED'}">
+                                                <span class="voted-badge"><i class="bi bi-check-circle-fill"></i> Vote Cast</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="badge bg-success">Open</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                    <p class="text-slate small mb-3" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                                        ${election.description}
+                                    </p>
+                                    <div class="d-flex gap-3 small text-slate mb-3">
+                                        <span><i class="bi bi-calendar-event me-1"></i>${election.startDate}</span>
+                                        <span><i class="bi bi-clock me-1"></i>Ends ${election.endDate}</span>
+                                    </div>
+                                    <c:if test="${election.status != 'VOTED'}">
+                                        <a href="${pageContext.request.contextPath}/voter/vote?electionId=${election.electionId}"
+                                           class="btn btn-primary btn-sm w-100">
+                                            <i class="bi bi-arrow-right-circle me-1"></i>View Ballot
+                                        </a>
+                                    </c:if>
+                                </div>
+                            </div>
+                        </c:forEach>
+                    </div>
+                </c:otherwise>
+            </c:choose>
+        </c:when>
+
+        <%-- ==================== STEP B: Candidate Ballot ==================== --%>
+        <c:otherwise>
+            <!-- Back link -->
+            <a href="${pageContext.request.contextPath}/voter/vote" class="btn btn-outline-secondary btn-sm mb-3">
+                <i class="bi bi-arrow-left me-1"></i>Back to Elections
+            </a>
+
+            <div class="ev-card mb-4">
+                <div class="card-body py-3">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div>
+                            <h3 class="fw-800 text-navy mb-0">${selectedElection.title}</h3>
+                            <p class="text-slate small mb-0">${selectedElection.description}</p>
+                        </div>
+                        <span class="badge bg-success">Voting Open</span>
                     </div>
                 </div>
             </div>
-        </c:forEach>
 
-        <c:if test="${empty elections}">
-            <div class="col-12 text-center py-5">
-                <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
-                <h5 class="mt-3 text-muted">No Active Elections</h5>
-                <p class="text-muted">There are no elections currently open for voting.</p>
-                <a href="${pageContext.request.contextPath}/results" class="btn btn-outline-primary">
-                    <i class="bi bi-bar-chart"></i> View Results
-                </a>
-            </div>
-        </c:if>
-    </div>
-</c:if>
-
-<!-- Ballot for Selected Election -->
-<c:if test="${selectedElection != null && !hasVoted}">
-    <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0"><i class="bi bi-ballot"></i> ${selectedElection.title}</h4>
-            <small>Select one candidate and submit your vote.</small>
-        </div>
-        <div class="card-body">
-            <form method="POST" action="${pageContext.request.contextPath}/voter/vote" id="voteForm">
-                <input type="hidden" name="_csrf" value="${csrfToken}">
-                <input type="hidden" name="electionId" value="${selectedElection.electionId}">
-
-                <c:forEach var="candidate" items="${candidates}">
-                    <div class="card mb-3 candidate-card" onclick="selectCandidate(${candidate.candidateId})">
-                        <div class="card-body d-flex align-items-center">
-                            <input type="radio" name="candidateId" value="${candidate.candidateId}"
-                                   id="cand_${candidate.candidateId}" class="form-check-input me-3"
-                                   style="width: 20px; height: 20px;" required>
-                            <div class="flex-grow-1">
-                                <h5 class="mb-1">${candidate.name}</h5>
-                                <span class="badge bg-info">${candidate.party}</span>
-                                <c:if test="${candidate.bio != null && !empty candidate.bio}">
-                                    <p class="text-muted mt-1 mb-0 small">${candidate.bio}</p>
-                                </c:if>
+            <c:choose>
+                <c:when test="${hasVoted}">
+                    <div class="ev-card">
+                        <div class="card-body text-center py-5">
+                            <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+                                 style="width:64px;height:64px;background:var(--ev-green-100);color:var(--ev-green-600);">
+                                <i class="bi bi-check-circle-fill" style="font-size:2rem;"></i>
                             </div>
-                            <c:if test="${candidate.photoUrl != null && !empty candidate.photoUrl}">
-                                <img src="${candidate.photoUrl}" alt="${candidate.name}"
-                                     class="rounded-circle ms-3" style="width:60px;height:60px;object-fit:cover;">
-                            </c:if>
+                            <h4 class="fw-700">You Have Already Voted</h4>
+                            <p class="text-slate">Your ballot for this election has been recorded.</p>
                         </div>
                     </div>
-                </c:forEach>
+                </c:when>
+                <c:otherwise>
+                    <form method="POST" action="${pageContext.request.contextPath}/voter/vote" id="voteForm">
+                        <input type="hidden" name="_csrf" value="${csrfToken}">
+                        <input type="hidden" name="electionId" value="${selectedElection.electionId}">
+                        <input type="hidden" name="candidateId" id="selectedCandidateId">
 
-                <c:if test="${empty candidates}">
-                    <div class="text-center py-4 text-muted">
-                        <p>No candidates registered for this election yet.</p>
+                        <div class="row g-4" id="candidateGrid">
+                            <c:forEach var="candidate" items="${candidates}">
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="ev-candidate-card h-100" onclick="selectCandidate(${candidate.candidateId}, '${candidate.name}')"
+                                         data-candidate-id="${candidate.candidateId}" data-candidate-name="${candidate.name}">
+                                        <div class="check-indicator">
+                                            <i class="bi bi-check2" style="font-size:.8rem;"></i>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-3 mb-3">
+                                            <c:choose>
+                                                <c:when test="${candidate.photoUrl != null && !candidate.photoUrl.isEmpty()}">
+                                                    <img src="${candidate.photoUrl}" alt="${candidate.name}" class="candidate-photo">
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <div class="candidate-photo d-flex align-items-center justify-content-center">
+                                                        <i class="bi bi-person-fill text-slate" style="font-size:1.5rem;"></i>
+                                                    </div>
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <div>
+                                                <h6 class="fw-700 mb-0 text-navy">${candidate.name}</h6>
+                                                <span class="badge bg-info mt-1">${candidate.party}</span>
+                                            </div>
+                                        </div>
+                                        <c:if test="${candidate.bio != null && !candidate.bio.isEmpty()}">
+                                            <p class="text-slate small mb-2" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">
+                                                ${candidate.bio}
+                                            </p>
+                                        </c:if>
+                                        <c:if test="${candidate.symbolUrl != null && !candidate.symbolUrl.isEmpty()}">
+                                            <div class="mt-auto pt-2" style="border-top:1px solid var(--ev-slate-200);">
+                                                <div class="text-slate" style="font-size:.65rem;text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-bottom:.35rem;">Party Symbol</div>
+                                                <img src="${candidate.symbolUrl}" alt="${candidate.party} symbol" class="party-symbol">
+                                            </div>
+                                        </c:if>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </div>
+
+                        <div class="d-flex justify-content-center mt-4">
+                            <button type="button" class="btn btn-primary btn-lg px-5" id="submitVoteBtn"
+                                    onclick="showConfirmModal()" disabled>
+                                <i class="bi bi-check2-circle me-2"></i>Submit Vote
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Confirmation Modal -->
+                    <div class="modal fade ev-modal" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title fw-700" id="confirmModalLabel">
+                                        <i class="bi bi-exclamation-triangle text-warning me-2"></i>Confirm Your Vote
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p class="mb-2">You are about to vote for:</p>
+                                    <div class="p-3 rounded-3" style="background:var(--ev-blue-50); border:1px solid var(--ev-blue-100);">
+                                        <strong class="text-navy" id="confirmCandidateName"></strong>
+                                    </div>
+                                    <p class="text-danger small mt-3 mb-0">
+                                        <i class="bi bi-exclamation-circle me-1"></i>
+                                        <strong>This action cannot be undone.</strong> You will not be able to change your vote.
+                                    </p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-primary" onclick="submitVote()">
+                                        <i class="bi bi-check-circle me-1"></i>Confirm Vote
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </c:if>
-
-                <c:if test="${!empty candidates}">
-                    <div class="text-center mt-3">
-                        <button type="submit" class="btn btn-success btn-lg px-5" id="submitBtn" disabled>
-                            <i class="bi bi-check2-all"></i> Submit My Vote
-                        </button>
-                    </div>
-                </c:if>
-            </form>
-        </div>
-    </div>
-    <a href="${pageContext.request.contextPath}/voter/vote" class="btn btn-outline-secondary mt-3">
-        <i class="bi bi-arrow-left"></i> Back to Elections
-    </a>
-</c:if>
-
-<c:if test="${selectedElection != null && hasVoted}">
-    <div class="alert alert-success">
-        <i class="bi bi-check-circle-fill"></i> You have already voted in this election.
-        <a href="${pageContext.request.contextPath}/voter/vote">Go back to elections</a>
-    </div>
-</c:if>
+                </c:otherwise>
+            </c:choose>
+        </c:otherwise>
+    </c:choose>
+</div>
 
 <script>
-function selectCandidate(id) {
-    document.getElementById('cand_' + id).checked = true;
-    document.getElementById('submitBtn').disabled = false;
-    document.querySelectorAll('.candidate-card').forEach(c => c.classList.remove('border-primary', 'border-2'));
-    document.getElementById('cand_' + id).closest('.candidate-card').classList.add('border-primary', 'border-2');
+let selectedId = null;
+let selectedName = '';
+
+function selectCandidate(id, name) {
+    selectedId = id;
+    selectedName = name;
+    document.getElementById('selectedCandidateId').value = id;
+    document.getElementById('submitVoteBtn').disabled = false;
+
+    // Update visual state
+    document.querySelectorAll('.ev-candidate-card').forEach(card => {
+        card.classList.toggle('selected', parseInt(card.dataset.candidateId) === id);
+    });
+}
+
+function showConfirmModal() {
+    if (!selectedId) return;
+    document.getElementById('confirmCandidateName').textContent = selectedName;
+    new bootstrap.Modal(document.getElementById('confirmModal')).show();
+}
+
+function submitVote() {
+    bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+    document.getElementById('voteForm').submit();
 }
 </script>
 
